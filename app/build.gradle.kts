@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.jetbrains.kotlin.android)
+    id("com.google.devtools.ksp")
 }
 
 android {
@@ -26,6 +27,7 @@ android {
             )
         }
     }
+    buildFeatures { viewBinding = true }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
@@ -36,15 +38,21 @@ android {
 }
 
 dependencies {
-    //retrofit config
-    implementation(libs.retrofit)
-    implementation(libs.converter.gson)
+    //ImagePicker
+    implementation(libs.imagepicker)
 
-    //paging
-    implementation(libs.androidx.paging.runtime)
+    // Room runtime
+    implementation(libs.androidx.room.runtime)
+
+    // Kotlin extensions (Room KTX)
+    implementation(libs.androidx.room.ktx)
+
+    // Annotation processor with KSP
+    ksp(libs.androidx.room.compiler)
 
     //glide
-    implementation(libs.converter.gson)
+    implementation(libs.glide)
+
 
 //repeatOnLifecycle
     implementation(libs.androidx.lifecycle.runtime.ktx)

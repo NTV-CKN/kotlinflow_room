@@ -1,5 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="black">#FF000000</color>
+    <color name="gray">#CDC8C8</color>
     <color name="white">#FFFFFFFF</color>
+    <color name="toolbar">#00B3A2</color>
+    <color name="dialog_delete">#05BDAB</color>
+    <color name="status_nav">#018276</color>
+    <color name="item_user">#B4E8E3</color>
+    <color name="color_email">#D035EB</color>
 </resources>
