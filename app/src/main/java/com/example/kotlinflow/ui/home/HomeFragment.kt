@@ -1,5 +1,6 @@
 package com.example.kotlinflow.ui.home
 
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -16,9 +17,10 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.coroutineScope
 import androidx.lifecycle.repeatOnLifecycle
+import androidx.navigation.findNavController
+import androidx.navigation.fragment.findNavController
 import com.example.kotlinflow.R
 import com.example.kotlinflow.data.local.database.AppDatabase
-import com.example.kotlinflow.data.local.model.NavigationEnum
 import com.example.kotlinflow.data.local.model.User
 import com.example.kotlinflow.data.repository.UserRepositoryImpl
 import com.example.kotlinflow.databinding.FragmentHomeBinding
@@ -26,7 +28,8 @@ import com.example.kotlinflow.ui.OnMenuUserClick
 import com.example.kotlinflow.ui.adapter.UserAdapter
 import com.example.kotlinflow.ui.delete.DeleteDialogFragment
 import com.example.kotlinflow.ui.factory.ViewModelFactoryHelper
-import com.example.kotlinflow.ui.viewmodel.NavigationViewModel
+import com.example.kotlinflow.ui.send_email.SendMailActivity
+import com.example.kotlinflow.ui.viewmodel.SaveUserViewModel
 import com.example.kotlinflow.ui.viewmodel.UserViewModel
 import com.example.kotlinflow.utils.Utils
 import kotlinx.coroutines.flow.collectLatest
@@ -43,8 +46,8 @@ class HomeFragment : Fragment(), OnMenuUserClick, MenuProvider {
             ViewModelFactoryHelper(repository)
         )[UserViewModel::class.java]
     }
-    private val navViewModel: NavigationViewModel by lazy {
-        ViewModelProvider(requireActivity())[NavigationViewModel::class.java]
+    private val saveUser: SaveUserViewModel by lazy {
+        ViewModelProvider(requireActivity())[SaveUserViewModel::class.java]
     }
 
     override fun onCreateView(
@@ -67,29 +70,10 @@ class HomeFragment : Fragment(), OnMenuUserClick, MenuProvider {
         setupEventFloatingBtn()
     }
 
-    override fun onResume() {
-        super.onResume()
-        Log.d("HomeFragment", "onResume called")
-    }
-
-    override fun onPause() {
-        super.onPause()
-        Log.d("HomeFragment", "onPause called")
-    }
-
-    override fun onStop() {
-        super.onStop()
-        Log.d("HomeFragment", "onStop called")
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        Log.d("HomeFragment", "onDestroy called")
-    }
-
-
     private fun setupEventFloatingBtn() {
-        binding.floating.setOnClickListener { navViewModel.startNav(NavigationEnum.ADD) }
+        binding.floating.setOnClickListener {
+            it.findNavController().navigate(R.id.action_homeFragment_to_addFragment)
+        }
     }
 
     private fun initAdapter() {
@@ -113,10 +97,10 @@ class HomeFragment : Fragment(), OnMenuUserClick, MenuProvider {
                 }
                 launch {//users
                     userViewModel.users.collect { users ->
-                        if(users.isEmpty()){
+                        if (users.isEmpty()) {
                             binding.imgFolderNotSp.visibility = View.VISIBLE
                             binding.recyclerViewHome.visibility = View.GONE
-                        }else {
+                        } else {
                             binding.imgFolderNotSp.visibility = View.GONE
                             binding.recyclerViewHome.visibility = View.VISIBLE
                         }
@@ -128,7 +112,7 @@ class HomeFragment : Fragment(), OnMenuUserClick, MenuProvider {
     }
 
     override fun onMenuUserClick(menuItem: MenuItem, user: User): Boolean {
-        navViewModel.user = user
+        saveUser.saveUser(user)
         return when (menuItem.itemId) {
             R.id.menu_delete -> {
                 DeleteDialogFragment().show(childFragmentManager, null)
@@ -136,15 +120,18 @@ class HomeFragment : Fragment(), OnMenuUserClick, MenuProvider {
             }
 
             R.id.menu_update -> {
-                navViewModel.startNav(NavigationEnum.UPDATE)
+                findNavController().navigate(R.id.action_homeFragment_to_updateFragment)
                 true
             }
 
             R.id.menu_send_email -> {
-                navViewModel.startNav(NavigationEnum.SEND_EMAIL)
+                val intent = Intent(requireActivity(), SendMailActivity::class.java)
+                intent.let {
+                    it.putExtra(Utils.KEY_EMAIL, user.email)
+                    startActivity(it)
+                }
                 true
             }
-
             else -> false
         }
     }
@@ -166,8 +153,7 @@ class HomeFragment : Fragment(), OnMenuUserClick, MenuProvider {
                         if (newText.isNotEmpty()) {
                             Log.d("HomeFragment", "onQueryTextChange")
                             userViewModel.findUserByEmail(newText)
-                        }
-                        else
+                        } else
                             userAdapter.updateUsers(userViewModel.users.value)
                     }
                     return true

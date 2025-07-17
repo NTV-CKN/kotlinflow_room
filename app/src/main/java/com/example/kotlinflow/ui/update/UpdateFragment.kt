@@ -20,7 +20,7 @@ import com.example.kotlinflow.data.local.model.User
 import com.example.kotlinflow.data.repository.UserRepositoryImpl
 import com.example.kotlinflow.databinding.FragmentUpdateBinding
 import com.example.kotlinflow.ui.factory.ViewModelFactoryHelper
-import com.example.kotlinflow.ui.viewmodel.NavigationViewModel
+import com.example.kotlinflow.ui.viewmodel.SaveUserViewModel
 import com.example.kotlinflow.ui.viewmodel.UserViewModel
 import com.example.kotlinflow.utils.Utils
 import com.github.dhaval2404.imagepicker.ImagePicker
@@ -31,6 +31,7 @@ import kotlinx.coroutines.launch
 class UpdateFragment : Fragment() {
     private lateinit var binding: FragmentUpdateBinding
     private var uri: String? = null
+    private var user: User? = null
     private val launcher =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             Log.d("AddFragment", "Result ${result.resultCode}")
@@ -54,8 +55,22 @@ class UpdateFragment : Fragment() {
             ViewModelFactoryHelper(repository)
         )[UserViewModel::class.java]
     }
-    private val navViewModel: NavigationViewModel by lazy {
-        ViewModelProvider(requireActivity())[NavigationViewModel::class.java]
+    private val saveUser: SaveUserViewModel by lazy {
+        ViewModelProvider(requireActivity())[SaveUserViewModel::class.java]
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        lifecycle.coroutineScope.launch {
+            repeatOnLifecycle(Lifecycle.State.CREATED) {
+                launch {//save user
+                    saveUser.saveUser.collectLatest {
+                        user = it
+                        uri = it.img
+                    }
+                }
+            }
+        }
     }
 
     override fun onCreateView(
@@ -104,7 +119,6 @@ class UpdateFragment : Fragment() {
                     }
                 }
             }
-
         }
     }
 
@@ -127,23 +141,30 @@ class UpdateFragment : Fragment() {
     }
 
     private fun initContent() {
-        val user = navViewModel.user
-        binding.includeUpdate.inputEmail.setText(user.email)
-        binding.includeUpdate.inputFullName.setText(user.fullName)
-        Glide.with(binding.root)
-            .load(user.img)
-            .error(ContextCompat.getDrawable(requireContext(), R.drawable.ic_img_not_sp))
-            .into(binding.includeUpdate.imgAvatar)
+        if (user != null) {
+            binding.includeUpdate.inputEmail.setText(user!!.email)
+            binding.includeUpdate.inputFullName.setText(user!!.fullName)
+            Glide.with(binding.root)
+                .load(user!!.img)
+                .error(ContextCompat.getDrawable(requireContext(), R.drawable.ic_img_not_sp))
+                .into(binding.includeUpdate.imgAvatar)
+        } else {
+            Utils.showSnackbar(binding.root, "User is null!")
+        }
     }
 
     private fun handleClickBtnOk() {
-//        val email = binding.includeUpdate.inputEmail.text.toString()
-        val fullName = binding.includeUpdate.inputFullName.text.toString()
-        if (fullName.isNotEmpty()) {
-            userViewModel.updateUser(User(fullName, navViewModel.user.email, uri))
-            Utils.hideKeyboard(requireActivity())
+        if (user != null) {
+            val fullName = binding.includeUpdate.inputFullName.text.toString()
+            if (fullName.isNotEmpty()) {
+                userViewModel.updateUser(User(fullName, user!!.email, uri))
+                Utils.hideKeyboard(requireActivity())
+            } else {
+                Utils.showSnackbar(binding.root, "You must fill all the boxes!")
+            }
         } else {
-            Utils.showSnackbar(binding.root, "You must fill all the boxes!")
+            Utils.showSnackbar(binding.root, "User is null!")
         }
+
     }
 }

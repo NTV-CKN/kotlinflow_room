@@ -47,6 +47,10 @@ dependencies {
     // Kotlin extensions (Room KTX)
     implementation(libs.androidx.room.ktx)
 
+    //navigation
+    implementation(libs.androidx.navigation.fragment.ktx)
+    implementation(libs.androidx.navigation.ui.ktx)
+
     // Annotation processor with KSP
     ksp(libs.androidx.room.compiler)
 

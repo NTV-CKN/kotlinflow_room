@@ -22,7 +22,6 @@ import com.example.kotlinflow.data.local.model.User
 import com.example.kotlinflow.data.repository.UserRepositoryImpl
 import com.example.kotlinflow.databinding.FragmentAddBinding
 import com.example.kotlinflow.ui.factory.ViewModelFactoryHelper
-import com.example.kotlinflow.ui.viewmodel.NavigationViewModel
 import com.example.kotlinflow.ui.viewmodel.UserViewModel
 import com.example.kotlinflow.utils.Utils
 import com.github.dhaval2404.imagepicker.ImagePicker
@@ -56,10 +55,7 @@ class AddFragment : Fragment() {
             ViewModelFactoryHelper(repository)
         )[UserViewModel::class.java]
     }
-    @Suppress("unused")
-    private val navViewModel: NavigationViewModel by lazy {
-        ViewModelProvider(requireActivity())[NavigationViewModel::class.java]
-    }
+
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
