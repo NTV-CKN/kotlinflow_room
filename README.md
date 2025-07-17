@@ -4,3 +4,5 @@ App basic
 - Các chức năng:
   + Crud user
   + Mở màn hình nhập liệu tiêu đề và nội dung trước khi mở ra email app
+
+  - Nhánh fix_navigation: fix lỗi điều hướng, lỗi cập nhật mất ảnh
